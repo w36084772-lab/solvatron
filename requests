@@ -1,0 +1,40 @@
+import requests
+import time
+
+TELEGRAM_TOKEN = "8886129807:AAGkQ5aJs8glm42xyubOWCiwa9EbHO-izrI"
+CHAT_ID = "8632875840"
+
+def send(msg):
+    try:
+        requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
+                     data={"chat_id": CHAT_ID, "text": msg}, timeout=5)
+    except Exception as e:
+        print(f"Send error: {e}")
+
+def get_updates(offset=None):
+    try:
+        r = requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getUpdates",
+                        params={"timeout": 30, "offset": offset}, timeout=35)
+        return r.json().get("result", [])
+    except:
+        return []
+
+send("✅ Simple Bot is ALIVE")
+last_id = 0
+
+while True:
+    try:
+        updates = get_updates(last_id + 1)
+        for u in updates:
+            if "message" in u and "text" in u["message"]:
+                t = u["message"]["text"]
+                print(f"Received: {t}")
+                if t == "/ping":
+                    send("Pong")
+                else:
+                    send("Send /ping for a reply")
+                last_id = u["update_id"]
+        time.sleep(1)
+    except Exception as e:
+        print(f"ERROR: {e}")
+        time.sleep(10)
